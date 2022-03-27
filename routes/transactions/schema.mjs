@@ -10,7 +10,7 @@ const addTransactionSchema = Joi.object({
   title: Joi.string().required(),
   description: Joi.string().optional(),
   accountId: Joi.number().required(),
-  type: Joi.string().valid('income', 'expense'),
+  type: Joi.string().valid('income', 'expense').required(),
   categoryId: Joi.number().required(),
   amount: Joi.number().required(),
   date: Joi.date().format('DD.MM.YYYY')

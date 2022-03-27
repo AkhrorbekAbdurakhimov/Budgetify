@@ -70,7 +70,7 @@ class Transactions {
         amount,
         date
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, ${date ? date : 'NOW()::DATE'}
+        $1, $2, $3, $4, $5, $6, ${date ? `'${date}'` : 'NOW()::DATE'}
       );
     `;
     
@@ -111,6 +111,15 @@ class Transactions {
     `;
     await database.query(sql, [id]);
     
+  }
+  
+  static async isCategoryExist(categortId) {
+    const sql = `
+      SELECT id FROM transactions WHERE category_id = $1;
+    `;
+    
+    const result = await database.query(sql, [categortId]);
+    return result.rows || [];
   }
 }
 
