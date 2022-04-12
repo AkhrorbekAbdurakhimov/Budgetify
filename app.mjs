@@ -5,6 +5,7 @@ import passport from 'passport';
 import authRouter from './routes/auth/index.mjs';
 import accountsRouter from './routes/accounts/index.mjs';
 import categoriesRouter from './routes/categories/index.mjs';
+import currenciesRouter from './routes/currencies/index.mjs';
 import transactionsRouter from './routes/transactions/index.mjs';
 import subscriptionsRouter from './routes/subscriptions/index.mjs';
 
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/api/auth', authRouter);
 app.use('/api/accounts', authMiddleware, accountsRouter);
 app.use('/api/categories', authMiddleware, categoriesRouter);
+app.use('/api/currencies', authMiddleware, currenciesRouter);
 app.use('/api/transactions', authMiddleware, transactionsRouter);
 app.use('/api/subscriptions', authMiddleware, subscriptionsRouter);
 

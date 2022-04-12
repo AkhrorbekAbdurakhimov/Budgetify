@@ -4,16 +4,21 @@ class Users {
   static async login ({ email, password }) {
     const sql = `
       SELECT
-        id,
-        email,
-        first_name, 
-        last_name,
-        to_char(date_of_birth, 'DD.MM.YYYY') as date_of_birth,
-        country
+        u.id,
+        u.email,
+        u.first_name AS "firstName", 
+        u.last_name AS "lastName",
+        to_char(u.date_of_birth, 'DD.MM.YYYY') AS "dateOfBirth",
+        con.title AS country,
+        c.title AS currency
       FROM
-        users
+        users u
+      JOIN 
+        currencies c ON c.country_id = u.country_id
+      JOIN
+        countries con ON con.id = u.country_id
       WHERE
-        email = $1 AND password = md5(md5(md5($2)));
+        u.email = $1 AND u.password = md5(md5(md5($2)));
     `
     
     const result = await database.query(sql, [ email, password ]);

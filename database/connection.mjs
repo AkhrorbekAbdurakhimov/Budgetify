@@ -5,7 +5,7 @@ const { Pool } = pkg;
 
 class Database {
   constructor() {
-    this.pool = new Pool(config.DB);
+    this.pool = new Pool(config.pgConfig);
   }
 
   query(query, params) {

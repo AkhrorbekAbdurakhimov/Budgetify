@@ -13,7 +13,7 @@ class Transactions {
     await database.query(`ROLLBACK;`);
   }
   
-  static async getTransactions() {
+  static async getTransactions(accountId) {
     const sql = `
       SELECT 
         t.id, 
@@ -21,17 +21,24 @@ class Transactions {
         t.description, 
         t.type,
         t.amount, 
+        cu.title AS currency,
         to_char(t.date, 'DD.MM.YYYY') as date, 
         c.title as categoryName
       FROM 
         transactions t
+      JOIN
+        accounts a ON a.id = t.account_id
       JOIN 
-        categories c ON c.id = t.category_id
+        currencies cu ON cu.id = a.currency_id
+      JOIN 
+        categories c ON c.id = t.category_id     
+      WHERE
+        t.account_id = $1   
       ORDER BY 
         date desc;
     `;
     
-    const result = await database.query(sql);
+    const result = await database.query(sql, [accountId]);
     return result.rows || [];
   }
   
@@ -42,13 +49,17 @@ class Transactions {
         t.description, 
         t.type,
         t.amount, 
-        t.account_id as "accountId",
+        cu.title AS currency,
         to_char(t.date, 'DD.MM.YYYY') as date, 
         c.title as categoryName
       FROM 
         transactions t
       JOIN 
         categories c ON c.id = t.category_id
+      JOIN
+        accounts a ON a.id = t.account_id
+      JOIN
+        currencies cu ON cu.id = a.currency_id
       WHERE 
         t.id = $1
       ORDER BY 

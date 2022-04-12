@@ -3,11 +3,16 @@ import express from "express";
 import { catchReject } from "./../../utils/helper.mjs";
 import { accountSchema, addAccountSchema, updateAccountSchema } from "./schema.mjs";
 import Accounts from "./../../database/accounts.mjs";
+import Currencies from "./../../database/currencies.mjs"
 
 const router = express.Router();
 
 const getAccounts = catchReject(async (req, res, next) => {
-  const accounts = await Accounts.getAllAccounts();
+  const accounts = await Accounts.getAllAccounts(req.user.id);
+  accounts.map((account, index) => {
+    if (index === 0) account.isSelected = true;
+    else account.isSelected = false;
+  })
   return res.status(200).send({
     accounts
   })
@@ -45,13 +50,16 @@ const addAccount = catchReject(async (req, res, next) => {
   
   try {
     const result = await Accounts.addAccount({ ...value, userId: req.user.id });
+    const currencyResult = await Currencies.getCurrency(result[0].currency_id, req.user.country_id);
+    result[0].currency = currencyResult[0].title;
     res.status(201).send({
       message: "Account created successfully",
       account: result[0]
     })
   } catch (err) {
+    console.log(err);
     if (err.code == '23505') {
-      res.status(209).send({
+      res.status(400).send({
         message: "Account title must be unique"
       })
     }

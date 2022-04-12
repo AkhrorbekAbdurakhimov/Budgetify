@@ -1,4 +1,4 @@
-import database from './../database/connection.mjs';
+import database from './connection.mjs';
 
 class Categories {
   static async getCategories() {

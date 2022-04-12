@@ -19,7 +19,9 @@ const config = {
     database: process.env.DB_NAME,
     application_name: process.env.DB_APPLICATION_NAME
   },
-
+  pgConfig: {
+    connectionString: process.env.pg_Config
+  }
 }
 
 export default config;

@@ -6,6 +6,10 @@ const transactionSchema = Joi.object({
   id: Joi.number().required()
 });
 
+const getTransactionsSchema = Joi.object({
+  accountId: Joi.number().required()
+})
+
 const addTransactionSchema = Joi.object({
   title: Joi.string().required(),
   description: Joi.string().optional(),
@@ -27,5 +31,5 @@ const updateTransactionSchema = Joi.object({
 })
 
 export {
-  transactionSchema, addTransactionSchema, updateTransactionSchema
+  getTransactionsSchema, transactionSchema, addTransactionSchema, updateTransactionSchema
 }

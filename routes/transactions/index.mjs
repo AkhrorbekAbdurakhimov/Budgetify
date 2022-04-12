@@ -2,14 +2,22 @@ import moment from "moment";
 import express from "express";
 
 import { catchReject } from "./../../utils/helper.mjs";
-import { transactionSchema, addTransactionSchema, updateTransactionSchema } from "./schema.mjs";
+import { getTransactionsSchema, transactionSchema, addTransactionSchema, updateTransactionSchema } from "./schema.mjs";
 import Accounts from "./../../database/accounts.mjs";
 import Transactions from "./../../database/transactions.mjs";
 
 const router = express.Router();
 
 const getTransactions = catchReject(async (req, res, next) => {
-  const transactions = await Transactions.getTransactions();
+  const { error, value } = getTransactionsSchema.validate(req.params);
+  
+  if (error) 
+    return next({
+      status: 400,
+      message: error.details[0].message
+    })
+    
+  const transactions = await Transactions.getTransactions(value.accountId);
   return res.status(200).send({
     transactions
   })
@@ -192,8 +200,8 @@ const deleteTransaction = catchReject(async (req, res, next) => {
   }
 })
 
-router.get('/', getTransactions);
-router.get('/:id', getTransaction);
+router.get('/:accountId', getTransactions);
+router.get('/transaction/:id', getTransaction);
 router.post('/', addTransaction);
 router.put('/:id', updateTransaction);
 router.delete('/:id', deleteTransaction);
