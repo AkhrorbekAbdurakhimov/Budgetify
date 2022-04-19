@@ -23,15 +23,24 @@ class Transactions {
         t.amount, 
         cu.title AS currency,
         to_char(t.date, 'DD.MM.YYYY') as date, 
-        c.title as categoryName
+        (
+          SELECT 
+            jsonb_agg(
+              json_build_object(
+                'id', id,
+                'title', title
+              )
+            )
+          FROM
+            categories
+          WHERE id = ANY (t.category_ids)
+        ) AS categories
       FROM 
         transactions t
       JOIN
         accounts a ON a.id = t.account_id
       JOIN 
-        currencies cu ON cu.id = a.currency_id
-      JOIN 
-        categories c ON c.id = t.category_id     
+        currencies cu ON cu.id = a.currency_id   
       WHERE
         t.account_id = $1   
       ORDER BY 
@@ -51,11 +60,20 @@ class Transactions {
         t.amount, 
         cu.title AS currency,
         to_char(t.date, 'DD.MM.YYYY') as date, 
-        c.title as categoryName
+        (
+          SELECT 
+            jsonb_agg(
+              json_build_object(
+                'id', id,
+                'title', title
+              )
+            )
+          FROM
+            categories
+          WHERE id = ANY (t.category_ids)
+        ) AS categories
       FROM 
         transactions t
-      JOIN 
-        categories c ON c.id = t.category_id
       JOIN
         accounts a ON a.id = t.account_id
       JOIN
@@ -70,22 +88,22 @@ class Transactions {
     return result.rows || [];
   }
   
-  static async addTransaction({ title, description = null, accountId, type, categoryId, amount, date = null }) {
+  static async addTransaction({ title, description = null, accountId, type, categoryIds, amount, date }) {
     const sql = `
       INSERT INTO transactions (
         title,
         description,
         account_id,
         type,
-        category_id,
+        category_ids,
         amount,
         date
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, ${date ? `'${date}'` : 'NOW()::DATE'}
+        $1, $2, $3, $4, '{${categoryIds.join(",")}}', $5, $6
       );
     `;
     
-    await database.query(sql, [title, description, accountId, type, categoryId, amount]);
+    await database.query(sql, [title, description, accountId, type, amount, date]);
   }
   
   static async updateTransaction(id, amount, accountId) {

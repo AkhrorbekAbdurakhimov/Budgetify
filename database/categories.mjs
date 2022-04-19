@@ -1,11 +1,14 @@
 import database from './connection.mjs';
 
 class Categories {
-  static async getCategories() {
+  static async getCategories(type = null) {
     const sql = `
-      SELECT * FROM categories;
+      SELECT 
+        * 
+      FROM 
+        categories
+      ${type ? `WHERE type = '${type}'` : ''};
     `;
-    
     const result = await database.query(sql);
     return result.rows || [];
   }

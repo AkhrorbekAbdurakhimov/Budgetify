@@ -1,14 +1,20 @@
 import express from "express";
 
 import { catchReject } from "./../../utils/helper.mjs";
-import { categorySchema, addCategorySchema, updateCategorySchema } from "./schema.mjs";
+import { getCategoriesSchema, categorySchema, addCategorySchema, updateCategorySchema } from "./schema.mjs";
 import Categories from "./../../database/categories.mjs";
 import Transactions from "./../../database/transactions.mjs";
 
 const router = express.Router();
 
 const getCategories = catchReject(async (req, res, next) => {
-  const categories = await Categories.getCategories();
+  const { error, value } = getCategoriesSchema.validate(req.query);
+  if (error) 
+    return next({
+      status: 400,
+      message: error.details[0].message
+    })
+  const categories = await Categories.getCategories(value.type);
   res.status(200).send({
     categories
   })

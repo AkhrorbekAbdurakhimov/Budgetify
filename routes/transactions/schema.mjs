@@ -15,9 +15,9 @@ const addTransactionSchema = Joi.object({
   description: Joi.string().optional(),
   accountId: Joi.number().required(),
   type: Joi.string().valid('income', 'expense').required(),
-  categoryId: Joi.number().required(),
+  categoryIds: Joi.array().items(Joi.number()).required(),
   amount: Joi.number().required(),
-  date: Joi.date().format('DD.MM.YYYY')
+  date: Joi.date().format('YYYY-MM-DD').required()
 });
 
 const updateTransactionSchema = Joi.object({

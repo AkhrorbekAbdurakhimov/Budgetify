@@ -52,12 +52,11 @@ const addTransaction = catchReject(async (req, res, next) => {
       message: error.details[0].message
     })
   
-  value.date = value.date ? moment(value.date).format('YYYY-MM-DD') : value.date
-  
   try {
     const result = await Accounts.GetEstimateBalance(value.type, value.amount, value.accountId);
     if (result[0].balance < 0) {
       return res.status(200).send({
+        type: 'warning',
         message: 'You have not enough money for expense'
       })
     }
@@ -70,6 +69,7 @@ const addTransaction = catchReject(async (req, res, next) => {
     })
   } catch (err) {
     await Transactions.rollbackTransaction();
+    console.log(err);
     return res.status(500).send({
       message: 'Internal server error',
       err: err.message
