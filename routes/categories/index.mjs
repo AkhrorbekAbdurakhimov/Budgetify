@@ -56,7 +56,7 @@ const updateCategory = catchReject(async (req, res, next) => {
     })
   } catch (err) {
     if (err.code == '23505') {
-      res.status(209).send({
+      res.status(400).send({
         message: "Category title must be unique"
       })
     }
