@@ -31,11 +31,11 @@ const addCategory = catchReject(async (req, res, next) => {
     const result = await Categories.addCategory(value);
     res.status(201).send({
       message: "Category created successfully",
-      account: result[0]
+      category: result[0]
     })
   } catch (err) {
     if (err.code == '23505') {
-      res.status(209).send({
+      res.status(400).send({
         message: "Category title must be unique"
       })
     }
@@ -73,7 +73,7 @@ const deleteCategory = catchReject(async (req, res, next) => {
   try {
     const result = await Transactions.isCategoryExist(value.id);
     if (result.length) {
-      res.status(200).send({
+      res.status(405).send({
         message: "You can not delete this category, because it has belong to transaction, delete transaction before delete"
       })
     } else {

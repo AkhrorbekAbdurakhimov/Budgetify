@@ -57,7 +57,6 @@ const addAccount = catchReject(async (req, res, next) => {
       account: result[0]
     })
   } catch (err) {
-    console.log(err);
     if (err.code == '23505') {
       res.status(400).send({
         message: "Account title must be unique"

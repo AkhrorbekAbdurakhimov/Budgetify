@@ -144,7 +144,7 @@ class Transactions {
   
   static async isCategoryExist(categortId) {
     const sql = `
-      SELECT id FROM transactions WHERE category_id = $1;
+      SELECT id FROM transactions WHERE $1 = ANY (category_ids);
     `;
     
     const result = await database.query(sql, [categortId]);
