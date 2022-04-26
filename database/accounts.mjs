@@ -75,6 +75,15 @@ class Accounts {
     const result = await database.query(sql);
     return result.rows || []
   }
+  
+  static async deleteAccount(accountId) {
+    const sql = `
+      DELETE FROM accounts
+      WHERE
+        id = $1;
+    `
+    await database.query(sql, [accountId]);
+  }
 }
 
 export default Accounts;

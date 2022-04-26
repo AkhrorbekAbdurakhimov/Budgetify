@@ -1,6 +1,6 @@
 import moment from "moment";
 import express from "express";
-import { addSubscriptionSchema } from "./schema.mjs";
+import { addSubscriptionSchema, getSubscriptionsSchema, getSubscriptionSchema } from "./schema.mjs";
 import { catchReject } from "./../../utils/helper.mjs";
 import Accounts from "./../../database/accounts.mjs";
 import Transactions from "./../../database/transactions.mjs";
@@ -9,9 +9,28 @@ import Subscriptions from "./../../database/subscriptions.mjs";
 const router = express.Router();
 
 const getSubscriptions = catchReject(async (req, res, next) => {
-  const subscriptions = await Subscriptions.getSubscriptions();
+  const { error, value } = getSubscriptionsSchema.validate(req.params);
+  if (error) 
+    return next({
+      status: 400,
+      message: error.details[0].message
+    })
+  const subscriptions = await Subscriptions.getSubscriptions(value.accountId);
   res.status(200).send({
     subscriptions
+  })
+})
+
+const getSubscription = catchReject(async (req, res, next) => {
+  const { error, value } = getSubscriptionSchema.validate(req.params);
+  if (error) 
+    return next({
+      status: 400,
+      message: error.details[0].message
+    })
+  const subscriptions = await Subscriptions.getSubscription(value.subscriptionId);
+  res.status(200).send({
+    subscription: subscriptions[0]
   })
 })
 
@@ -29,6 +48,7 @@ const addSubscription = catchReject(async (req, res, next) => {
     const balanceResult = await Accounts.GetEstimateBalance('expense', value.amount, value.accountId);
     if (balanceResult[0].balance < 0) {
       return res.status(200).send({
+        type: 'warning',
         message: 'You have not enough money for create subscription'
       })
     }
@@ -40,13 +60,13 @@ const addSubscription = catchReject(async (req, res, next) => {
       account: result[0]
     })
   } catch (err) {
-    console.log(err);
     await Transactions.rollbackTransaction();
     if (err.code == '23505') {
-      res.status(209).send({
+      res.status(400).send({
         message: "Subscription title must be unique"
       })
     } else {
+      console.log(err);
       res.status(500).send({
         message: "Internal server error"
       })
@@ -54,7 +74,8 @@ const addSubscription = catchReject(async (req, res, next) => {
   }
 })
 
-router.get('/', getSubscriptions);
+router.get('/:accountId', getSubscriptions);
+router.get('/subscription/:subscriptionId', getSubscription);
 router.post('/', addSubscription);
 
 export default router;

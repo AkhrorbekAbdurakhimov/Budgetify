@@ -9,7 +9,7 @@ import Transactions from "./../../database/transactions.mjs";
 const router = express.Router();
 
 const getTransactions = catchReject(async (req, res, next) => {
-  const { error, value } = getTransactionsSchema.validate(req.params);
+  const { error, value } = getTransactionsSchema.validate({ ...req.params, ...req.query});
   
   if (error) 
     return next({
@@ -17,7 +17,7 @@ const getTransactions = catchReject(async (req, res, next) => {
       message: error.details[0].message
     })
     
-  const transactions = await Transactions.getTransactions(value.accountId);
+  const transactions = await Transactions.getTransactions(value.accountId, value.type, value.order);
   return res.status(200).send({
     transactions
   })
@@ -168,6 +168,13 @@ const deleteTransaction = catchReject(async (req, res, next) => {
     const result = await Transactions.getTransaction(value.id);
     if (result.length) {
       const transaction = result[0];
+      const estimateResult = await Accounts.GetEstimateBalance(transaction.type === 'expense' ? 'income' : 'expense', transaction.amount, transaction.accountId);
+      if (estimateResult[0].balance < 0) {
+        return res.status(200).send({
+          type: 'warning',
+          message: 'You can not delete this transaction, because the card is not enough balance for your transaction'
+        })
+      }
       try {
         await Transactions.beginTransaction();
         await Accounts.updateAccountBalance(
@@ -182,6 +189,7 @@ const deleteTransaction = catchReject(async (req, res, next) => {
         })
       } catch (err) {
         await Transactions.rollbackTransaction();
+        console.log(err);
         return res.status(500).send({
           message: 'Internal server error',
           err: err.message
@@ -193,6 +201,7 @@ const deleteTransaction = catchReject(async (req, res, next) => {
       })
     }
   } catch (err) {
+    console.log(err);
     return res.status(500).send({
       message: 'Internal server error',
       err: err.message

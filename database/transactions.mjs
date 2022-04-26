@@ -13,7 +13,7 @@ class Transactions {
     await database.query(`ROLLBACK;`);
   }
   
-  static async getTransactions(accountId) {
+  static async getTransactions(accountId, type, order) {
     const sql = `
       SELECT 
         t.id, 
@@ -42,22 +42,24 @@ class Transactions {
       JOIN 
         currencies cu ON cu.id = a.currency_id   
       WHERE
-        t.account_id = $1   
+        t.account_id = $1 ${type ? ` AND t.type = $2::transactions_type` : ''}
       ORDER BY 
-        date desc;
+        t.date ${order};
     `;
     
-    const result = await database.query(sql, [accountId]);
+    const result = await database.query(sql, type ? [accountId, type] : [accountId]);
     return result.rows || [];
   }
   
   static async getTransaction(id) {
     const sql = `
       SELECT
+        t.id,
         t.title,
         t.description, 
         t.type,
         t.amount, 
+        t.account_id AS "accountId",
         cu.title AS currency,
         to_char(t.date, 'DD.MM.YYYY') as date, 
         (
@@ -140,6 +142,13 @@ class Transactions {
     `;
     await database.query(sql, [id]);
     
+  }
+  
+  static async deleteTransactionsByAccountId(accountId) {
+    const sql = `
+      DELETE FROM transactions WHERE account_id = $1;
+    `;
+    await database.query(sql, [accountId]);
   }
   
   static async isCategoryExist(categortId) {

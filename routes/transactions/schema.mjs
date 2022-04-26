@@ -7,12 +7,14 @@ const transactionSchema = Joi.object({
 });
 
 const getTransactionsSchema = Joi.object({
-  accountId: Joi.number().required()
+  accountId: Joi.number().required(),
+  type: Joi.string().valid('income', 'expense').allow(null),
+  order: Joi.string().valid('asc', 'desc').default('desc')
 })
 
 const addTransactionSchema = Joi.object({
   title: Joi.string().required(),
-  description: Joi.string().optional(),
+  description: Joi.string().optional().allow(null),
   accountId: Joi.number().required(),
   type: Joi.string().valid('income', 'expense').required(),
   categoryIds: Joi.array().items(Joi.number()).required(),

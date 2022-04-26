@@ -2,7 +2,7 @@ import Joi from 'joi';
 
 const addAccountSchema = Joi.object({
   title: Joi.string().required(),
-  description: Joi.string().required(),
+  description: Joi.string().optional().allow(null),
   currencyId: Joi.number().required(),
 })
 
